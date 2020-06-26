@@ -24,7 +24,10 @@ from .views import (
     remove_from_card,
     add_to_card_summary,
     remove_single_item_from_card,
-    remove_all_item_from_card
+    remove_all_item_from_card,
+    PaymentView,
+    add_coupon,
+    RequestRefundView,
     )
 
 app_name = 'app'
@@ -38,6 +41,9 @@ urlpatterns = [
     path('remove-from-card/<slug>',remove_from_card,name='remove-from-card'),
     path('remove-all-from-card/<slug>',remove_all_item_from_card,name='remove-all-from-card'),
     path('checkout/',Checkout.as_view(),name='checkout'),
+    path('add-coupon/',add_coupon, name='add-coupon'),
     path('remove-single/<slug>/',remove_single_item_from_card,name='remove-single-element'),
+    path('payment/<payment_option>',PaymentView.as_view(),name = 'payment'),
+    path('request-refund/',RequestRefundView.as_view(),name = 'request-refund'),
    
 ]

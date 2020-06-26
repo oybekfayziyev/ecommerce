@@ -118,6 +118,10 @@
     </div>
   </nav>
 
+  
+
+  {% block carousel %}
+  {% endblock %}
   {% if messages %}
   <ul class="messages">
       {% for message in messages %}
@@ -125,9 +129,6 @@
       {% endfor %}
   </ul>
   {% endif %}
-
-  {% block carousel %}
-  {% endblock %}
   
   {% block content %}
   {% endblock %}
