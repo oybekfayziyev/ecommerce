@@ -12,3 +12,14 @@ def cart_item_count(user):
 			return qs[0].items.count()
 
 	return 0 
+
+@register.filter
+def multiply(value1):
+	return round(value1 * 0.05)
+
+@register.filter
+def subtruct(value1, value2):
+	print('value1',value1)
+	print(value2)
+	return value1 - value2
+

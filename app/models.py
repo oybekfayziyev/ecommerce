@@ -2,6 +2,80 @@ from django.db import models
 from django.conf import settings
 from django.shortcuts import reverse
 from django_countries.fields import CountryField
+from django.db.models.signals import pre_save
+from django.db.models import Q
+from .utils.utils import generate_unique_slug
+
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+
+class UserManager(BaseUserManager):
+
+	def create_user(self, username, email=None, password=None, is_active=True, is_staff=False,is_admin=False):
+		if not password:
+			raise ValueError("User must have password")
+		
+		if email:
+			user_obj = self.model(
+				username = username,
+				email = self.normalize_email(email)
+			)
+		else:
+			user_obj = self.model(username=username)
+		
+		user_obj.set_password(password)
+		user_obj.staff = is_staff
+		user_obj.admin = is_admin
+		user_obj.active = is_active
+		user_obj.save(using=self._db)
+
+		return user_obj
+	
+	def create_staffuser(self,username,email=None, password=None):
+		create = self.create_user(username, email, password, is_staff=True)
+		return create
+	
+	def create_superuser(self, username, email=None, password=None):
+		create = self.create_user(username , email, password, is_admin=True, is_staff=True)
+		return create
+	
+
+
+
+class AbstractUser(AbstractBaseUser):
+	username = models.CharField(max_length=100, unique=True)
+	email = models.EmailField(max_length=274,unique=True)
+	active = models.BooleanField(default=True)
+	staff = models.BooleanField(default = False)
+	admin = models.BooleanField(default=False)
+
+	timestamp = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.username
+	
+	@property
+	def is_staff(self):
+		return self.staff
+	
+	@property
+	def is_admin(self):
+		return self.admin
+	
+	@property
+	def is_active(self):
+		return self.active
+
+class GuestEmail(models.Model):
+    email       = models.EmailField()
+    active      = models.BooleanField(default=True)
+    update      = models.DateTimeField(auto_now=True)
+    timestamp   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+
+
 # Create your models here.
 CATEGORY_CHOICES = (
 	('S','Shirt'),
@@ -19,6 +93,23 @@ ADDRESS_CHOICES = (
 	('B', 'Billing')
 )
 
+class ItemQuerySet(models.QuerySet):
+
+	def search(self, query):
+		lookups = (Q(title__icontains=query) | 
+					Q(price__icontains=query) |
+					Q(category__icontains=query) |
+					Q(description__icontains=query))
+
+		return self.filter(lookups).distinct()
+
+class ItemManager(models.Manager):
+
+	def get_queryset(self):
+		return ItemQuerySet(self.model, using=self._db)
+	
+	def search(self,query):
+		return self.get_queryset().search(query)
 
 class Item(models.Model):
 	title = models.CharField(max_length=100)
@@ -27,13 +118,15 @@ class Item(models.Model):
 	category = models.CharField(choices = CATEGORY_CHOICES,max_length=2)
 	label = models.CharField(choices=LABEL_CHOICES,max_length=1)
 	description = models.TextField()
-	slug = models.SlugField()
+	slug = models.SlugField(blank=True, null=True)
 	image = models.ImageField()
 
+	objects = ItemManager()
 
 	def __str__(self):
 		return self.title
-
+	
+	
 	def get_absolute_url(self):
 		return reverse("app:product",kwargs = {
 				'slug' : self.slug
@@ -47,6 +140,12 @@ class Item(models.Model):
 		return reverse("app:remove-from-card",kwargs = {
 			'slug' : self.slug
 			})
+
+def generate_slug(sender, instance, *args, **kwargs):
+	if not instance.slug:
+		instance.slug = generate_unique_slug(instance)
+
+pre_save.connect(generate_slug, sender = Item)
 
 class OrderItem(models.Model):
 
@@ -90,6 +189,7 @@ class Address(models.Model):
 	class Meta:
 		verbose_name_plural = 'Addresses'
 
+
 class Order(models.Model):
 	user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
 	ref_code = models.CharField(max_length=20)
@@ -105,13 +205,13 @@ class Order(models.Model):
 	received = models.BooleanField(default = False)
 	refund_requested = models.BooleanField(default=False)
 	refund_granted = models.BooleanField(default = False)
-
+ 
 	def __str__(self):
 		return f"{self.user}"
 
 	def total(self):
 		total = 0
-		for order_item in self.items.all():
+		for order_item in self.items.all():			 
 			total += order_item.get_final_price()
 		if self.coupon:
 			total -= self.coupon.amount 
@@ -126,10 +226,9 @@ class Payment(models.Model):
 	def __str__(self):
 		return self.user.username;
 
-class Coupon(models.Model):
-	
+class Coupon(models.Model):	
 	code = models.CharField(max_length=30)
-	amount = models.FloatField(default=5)
+	amount = models.FloatField(default=0)
 
 	def __str__(self):
 		return self.code

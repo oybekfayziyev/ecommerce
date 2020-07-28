@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'crispy_forms',
     'django_countries',
+    'jquery',
 ]
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
@@ -145,3 +146,17 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 STRIPE_SECRET_KEY = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media_root')
+
+PROMO_CODE_LIST = [
+    'ROBLOXROCKS500K',
+    'WEAREROBLOX300',
+    'ROBLOXROCKS500K',
+    'ROBLOXIG500K',
+    'MOTHRAUNLEASHED',
+    'SPIDERMANONROBLOX',
+    'ONEMILLIONCLUB',
+    'FINDTHEKEYS',
+    'JURASSICWORLD',
+    'EBGAMESBLACKFRIDAY',
+    'KINGOFTHESEAS'
+]
