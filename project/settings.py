@@ -40,13 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
-    'django.contrib.sites',
+    'django.contrib.sites',    
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'crispy_forms',
     'django_countries',
     'jquery',
+    'mptt',
+    'rest_framework',
 ]
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
@@ -146,6 +148,13 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 STRIPE_SECRET_KEY = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media_root')
+
+FORCE_SESSION_TO_ONE = False
+FORCE_INACTIVE_USER_ENDSESSION= False
+
+MAILCHIMP_API_KEY  = 'e67ca863bcbab21764b3b68cead9d4ff-us17'
+MAILCHIMP_DATA_CENTER = "us17"
+MAILCHIMP_EMAIL_LIST_ID = '685352d21c'
 
 PROMO_CODE_LIST = [
     'ROBLOXROCKS500K',

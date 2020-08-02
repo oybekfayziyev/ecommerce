@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="ht__bradcaump__area" style="background: rgba(0, 0, 0, 0) url(images/bg/2.jpg) no-repeat scroll center center / cover ;">
+    <div class="ht__bradcaump__wrap">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="bradcaump__inner text-center">
+                        <h2 class="bradcaump-title">Ordered Items</h2>
+                        <nav class="bradcaump-inner">
+                            <a class="breadcrumb-item" href="index.html">Home</a>
+                            <span class="brd-separetor">/</span>
+                            <span class="breadcrumb-item active">Ordered Items</span>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- End Bradcaump area -->
+<!-- wishlist-area start -->
+<div class="wishlist-area ptb--120 bg__white">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="wishlist-content">
+                    <form action="#">
+                        <div class="wishlist-table table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="product-remove"><span class="nobr">#</span></th>
+                                        <th class="product-thumbnail">Image</th>
+                                        <th class="product-name"><span class="nobr">Product Name</span></th>
+                                        <th class="product-price"><span class="nobr"> Quantity </span></th>
+                                        <th class="product-stock-stauts"><span class="nobr"> Price </span></th>
+                                        <th class="product-add-to-cart"><span class="nobr">Status</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                
+                                    {% for order in orders %}
+                                        <tr>
+                                        <td class="product-remove">{{ forloop.counter }}</td>
+                                            {% for order_item in order.items.all %}                                        
+                                                
+                                                <td class="product-thumbnail"><a href=""><img src="{{ order_item.item.image.url }}" alt="" /></a></td>
+                                                <td class="product-name"><a href="#">{{ order_item.item.title }}</a></td>
+                                                <td class="product-price"><span class="amount">{{order_item.quantity}}</span></td>
+                                                <td class="product-stock-status"><span class="wishlist-in-stock">$ {{ order_item.item.price }}</span></td>
+                                                <td class="product-add-to-cart"><a href="#"> Ordered</a></td>
+                                            
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                   
+                                </tbody>
+                                
+                            </table>
+                        </div>  
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

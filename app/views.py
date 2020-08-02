@@ -1,7 +1,8 @@
 from django.conf import settings
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from .models import Item,Order,OrderItem
-from django.views.generic import ListView,DetailView,View
+from django.views.generic import ListView,DetailView,View, TemplateView
 from django.shortcuts import get_object_or_404,redirect
 from django.utils import timezone
 from django.contrib import messages
@@ -9,7 +10,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from app.forms import CheckoutForm, CouponForm, RequestRefundForm
-from .models import Address,Payment,Coupon,Refund
+from .models import Address,Payment,Coupon,Refund, Category
+from .mixins import ObjectViewedMixin
+from .exceptions import ImmediateHttpResponse
+from allauth.account.views import LoginView
 
 from .utils.core import get_promo_code
 # Create your views here.
@@ -23,44 +27,33 @@ import random
 def reference_code():
 	return ''.join(random.choices(string.ascii_lowercase + string.digits,k=20))
 
-def home(request):
-	context = {
-		'items' : Item.objects.all()		
-	}
-	return render(request,'home-page.html',context);
-
-def item(request):
-
-	context = {
-		'items' : Item.objects.all()		
-	}
-	return render(request,'item-list.html',context)
-
 
 class HomeView(ListView):
 	 
-	paginate_by = 10
-	template_name = 'home-page.html'
+	paginate_by = 9
+	template_name = 'home.html'
 
 	def get_context_data(self, *args, **kwargs):
 		context = super(HomeView,self).get_context_data(*args, **kwargs)
 		query = self.request.GET.get('search')		
+		category = Category.objects.all()
 		context["query"] = query
+		context['category'] = category
 		return context
 	
 	def get_queryset(self, *args, **kwargs):
 
-		query = self.request.GET.get('search', None)
-		print('query',query)
+		query = self.request.GET.get('search', None)	 
 		if query is not None:
-			print(Item.objects.search(query))
+						 
 			return Item.objects.search(query)
-		print('here',Item.objects.all())
+	 
 		return Item.objects.all()
 	
 	
 
 class OrderSummary(LoginRequiredMixin,View):
+
 	def get(self,*args,**kwargs):
 		try:
 			order = Order.objects.get(user=self.request.user,ordered=False)
@@ -73,9 +66,118 @@ class OrderSummary(LoginRequiredMixin,View):
 			return redirect("/") 
 	
 class ItemDetailView(DetailView):
-	model = Item
+	 
 	template_name = 'product-page.html'
 
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)			 
+		root_nodes = Category.objects.root_nodes()
+		node = Category.objects.get(title = self.get_object().category)
+		root = node.get_root()
+		siblings = node.get_siblings(include_self=True)	
+		related_items = Item.objects.filter(category__in = [i for i in siblings]) 	
+		context['category'] = related_items		 
+		return context
+	
+
+	def get_object(self, *args, **kwargs):
+		try:
+			item = Item.objects.get(slug = self.kwargs.get('slug'))		
+		except ObjectDoesNotExist:
+			messages.info(self.request, "Product slug is not found")
+			return redirect('/')
+		
+
+		return item
+
+def get_all_leaf_nodes(tree):
+
+	elem = []
+	print('len',len(tree))
+	print('tree',tree)
+	length = len(tree)
+	counter = 0
+	is_leaf_node = True
+	while is_leaf_node:
+		try:
+			for i in tree:
+				counter = counter + 1
+				print('tree',i)
+				if i.is_leaf_node():
+					elem.append(i)
+				else:
+					print('i',i)
+					print('get',get_all_leaf_nodes(i))
+					i = get_all_leaf_nodes(i).get_children()
+				print('here')
+			is_leaf_node = False		
+		except:			 	
+			tree = tree[counter:]
+			print('catttt',tree)
+
+	return elem
+	
+def get_category(id, slug):
+	try:
+		category = Category.objects.filter(slug = slug)
+		 
+		if not category[0].is_leaf_node():
+			 
+			category = category.get_descendants(include_self=False)
+			category = [i for i in category]
+			return category
+		else:		 
+			return category[0]
+	except ObjectDoesNotExist:
+		return None
+
+class CategoryDetailView(DetailView):
+
+	template_name = 'category_product.html'
+	paginated_by = 9
+
+	def get_object(self, *args, **kwargs):
+
+		try:
+			elements = get_category(self.kwargs.get('id'), self.kwargs.get('slug'))			 
+			category = Category.objects.filter(title__in = elements)			
+			items = Item.objects.filter(category__in = category)		 
+		except TypeError:			 
+			category = Category.objects.filter(title = elements)			 
+			items = Item.objects.filter(category = category[0])
+			 	
+		return items
+
+	def get_context_data(self, *args, **kwargs):
+		context = super(CategoryDetailView, self).get_context_data(*args, **kwargs)
+		category = get_category(self.kwargs.get('id'), self.kwargs.get('slug'))			 
+		query = self.request.GET.get('search')		 
+		context["query"] = query
+		context['category'] = category		 
+		return context
+	
+	def get_queryset(self, *args, **kwargs):
+
+		query = self.request.GET.get('search', None)	 
+		if query is not None:
+						 
+			return Item.objects.search(query)
+	 
+		return Item.objects.all()
+
+class OrderedItems(ListView):
+	 
+	template_name = 'ordered.html'
+	
+	def get_queryset(self):
+		orders = Order.objects.filter(user = self.request.user, ordered = True)		
+		return orders
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context["orders"] = self.get_queryset()
+		return context	
+	
 @login_required
 def add_to_card_summary(request,slug):
 	item = get_object_or_404(Item,slug=slug)
@@ -141,6 +243,7 @@ def remove_from_card(request,slug):
 			order_item = OrderItem.objects.filter(user=request.user,item=item,ordered=False)[0]
 			# order_item.quantity = 0				
 			order.items.remove(order_item)
+			order_item.delete()
 			# order.save()
 			# order_item.save()
 		else:
@@ -167,6 +270,7 @@ def remove_single_item_from_card(request,slug):
 				order_item.save()
 			else:
 				order.items.remove(order_item)
+				order_item.delete()
 			# order.save()
 			
 			return redirect("app:order-summary")
@@ -191,6 +295,7 @@ def remove_all_item_from_card(request,slug):
 			order_item = OrderItem.objects.filter(user=request.user,item=item,ordered=False)[0]	
 			
 			order.items.remove(order_item)
+			order_item.delete()
 			# order_item.quantity = 0
 			# order_item.save()
 			return redirect("app:order-summary")
@@ -208,42 +313,43 @@ class Checkout(View):
 	def get(self,*args,**kwargs):
 		billing_form = CheckoutForm()	
 		try:
-			if self.request.user.is_authenticated:
-				order = Order.objects.get(user = self.request.user,ordered=False)
-											
-				context = {
-					'form' : billing_form,					 
-					'order' : order,
-					'couponform' : CouponForm(),
-				}
-				shipping_address_qs = Address.objects.filter(
-					user=self.request.user,
-					address_type='S',
-					default=True
-            	)
+			if not self.request.user.is_authenticated:
+				return redirect("account_login")
+			order = Order.objects.get(user = self.request.user,ordered=False)
+						
+			context = {
+				'form' : billing_form,					 
+				'order' : order,
+				'couponform' : CouponForm(),
+			}
+			shipping_address_qs = Address.objects.filter(
+				user=self.request.user,
+				address_type='S',
+				default=True
+			)
 
 
-				if shipping_address_qs.exists():	
-					 
-					context.update({'default_shipping_address': shipping_address_qs[0]})
+			if shipping_address_qs.exists():	
+					
+				context.update({'default_shipping_address': shipping_address_qs[0]})
 
-				billing_address_qs = Address.objects.filter(
-					user=self.request.user,
-					address_type='B',
-					default=True
-            	)
+			billing_address_qs = Address.objects.filter(
+				user=self.request.user,
+				address_type='B',
+				default=True
+			)
 
-				if billing_address_qs.exists():
-					context.update({'default_billing_address': billing_address_qs[0]})
+			if billing_address_qs.exists():
+				context.update({'default_billing_address': billing_address_qs[0]})
 
 
-				return render(self.request,"checkout-page.html",context)
-			else:
-				return redirect('/accounts/login/')
+			return render(self.request,"checkout.html",context)
+		 
 
-		except ObjectDoesNotExist:
+		except Order.DoesNotExist:
+		 
 			messages.info(self.request,"Order does not exist")
-			return redirect("app:checkout")
+			return redirect("/")
 
 		
 
@@ -253,10 +359,12 @@ class Checkout(View):
 		coupon_form = CouponForm(self.request.POST or None)
 		
 		try:
-			order = Order.objects.get(user=self.request.user,ordered=False)			
-			 
-			if form.is_valid():
+			order = Order.objects.get(user=self.request.user,ordered=False,items__user = self.request.user)
+			print('order',order)			
 
+			if form.is_valid():
+			
+			
 				use_defaul_shipping = form.cleaned_data.get('use_default_shipping')
 
 				if use_defaul_shipping:
@@ -358,6 +466,7 @@ class Checkout(View):
 					
 					else:
 						messages.info(self.request, "Please fill in the required billing address fields")
+						return redirect('app:checkout')
 				
 				payment_option = form.cleaned_data.get('payment_option')
 				
@@ -535,3 +644,6 @@ class RequestRefundView(View):
 			except ObjectDoesNotExist:
 				messages.info(self.request,"This order does not exist")
 				return redirect("app:request-refund")
+
+class ContactView(TemplateView):
+	template_name = 'contact.html'

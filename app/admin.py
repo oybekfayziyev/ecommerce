@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Order,OrderItem,Item,Address,Payment,Coupon,Refund
+from .models import (Order, OrderItem, 
+					Item,Address,Payment,
+					Coupon,Refund, ObjectViewed, 
+					Category, ItemExtraImage)
+from mptt.admin import DraggableMPTTAdmin
+from django.utils.html import format_html
 # Register your models here.
 
 def make_refund_accepted(modeladmin,request,queryset):
@@ -51,11 +56,64 @@ class AddressAdmin(admin.ModelAdmin):
 	list_filter = ['default','address_type','country']
 	search_fields = ['user','street_address','second_address','zip_code']
 
+class ItemImageInline(admin.TabularInline):
+	model = ItemExtraImage
+	extra = 5
+
+class ItemAdmin(admin.ModelAdmin):
+
+	def image_tag(self, obj):
+		return format_html('<img src="{}" height="50px" width="50px"/>'.format(obj.image.url))
+    
+	image_tag.short_description = 'Image'
+ 
+	list_display = [
+		'title',
+		'category',	
+		'price',
+		'image_tag'
+	]
+	inlines = [ItemImageInline]
+
+class CategoryAdmin(DraggableMPTTAdmin):
+    mptt_indent_field = "title"
+    list_display = ('tree_actions', 'indented_title',
+                    'related_item_count', 'related_item_cumulative_count')
+    list_display_links = ('indented_title',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        # Add cumulative product count
+        qs = Category.objects.add_related_count(
+                qs,
+                Item,
+                'category',
+                'item_cumulative_count',
+                cumulative=True)
+
+        # Add non cumulative product count
+        qs = Category.objects.add_related_count(qs,
+                 Item,
+                 'category',
+                 'item_count',
+                 cumulative=False)
+        return qs
+
+    def related_item_count(self, instance):
+        return instance.item_count
+    related_item_count.short_description = 'Related products (for this specific category)'
+
+    def related_item_cumulative_count(self, instance):
+        return instance.item_cumulative_count
+    related_item_cumulative_count.short_description = 'Related products (in tree)'
 
 admin.site.register(Order,OrderAdmin)
 admin.site.register(OrderItem)
-admin.site.register(Item)
+admin.site.register(Item,ItemAdmin)
 admin.site.register(Address)
 admin.site.register(Payment)
 admin.site.register(Coupon)
 admin.site.register(Refund)
+admin.site.register(ObjectViewed)
+admin.site.register(Category,CategoryAdmin)

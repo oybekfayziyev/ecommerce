@@ -3,114 +3,145 @@
  
   
   {% block content %}
-  <main class="mt-5 pt-4">
+  <div class="ht__bradcaump__area" style="background: rgba(0, 0, 0, 0) url(images/bg/2.jpg) no-repeat scroll center center / cover ;">
+    <div class="ht__bradcaump__wrap">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="bradcaump__inner text-center">
+                        <h2 class="bradcaump-title">Cart</h2>
+                        <nav class="bradcaump-inner">
+                            <a class="breadcrumb-item" href="/">Home</a>
+                            <span class="brd-separetor">/</span>
+                            <span class="breadcrumb-item active">Cart</span>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="cart-main-area ptb--120 bg__white">
     <div class="container">
-
+        <div class="row">
+          <div class="col-md-12 col-sm-12 col-xs-12">  
       <!--Navbar-->
       
-      {% if is_paginated %}
-      <!--Pagination-->
-      <nav class="d-flex justify-content-center wow fadeIn">
-        <ul class="pagination pg-blue">
-          <!--Arrow left-->
-          {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-              <span class="sr-only">Previous</span>
-            </a>
-          </li>
-          {% endif %}
+            {% if is_paginated %}
+            <!--Pagination-->
+              <nav class="d-flex justify-content-center wow fadeIn">
+                <ul class="pagination pg-blue">
+                  <!--Arrow left-->
+                  {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                      <span class="sr-only">Previous</span>
+                    </a>
+                  </li>
+                  {% endif %}
 
-          <li class="page-item active">
-            <a class="page-link" href="?page={{ page_obj.number }}">
-              {{ page_obj.number }}
-              <span class="sr-only">(current)</span>              
-            </a>
-          </li>
-          
-          {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-              <span class="sr-only">Next</span>
-            </a>
-          </li>
-          {% endif %}
-        </ul>
-      </nav>
-      {% endif %}
-      <!--Pagination-->
-      <h2>Order Summary</h2>     
-      <div class="table-responsive text-nowrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Item Title</th>
-              <th scope="col">Price</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Total Cost</th>
-            
-            </tr>
-          </thead>
-          <tbody>
-            {% for order_item in object.items.all %}
-            <tr>
-              <th scope="row">{{ forloop.counter}}</th>
-              <td>{{ order_item.item.title}}</td>
-              <td>{{ order_item.item.price }}
-                
-              </td>
-              <td>
-                <a href="{% url 'app:remove-single-element' order_item.item.slug %}"><i class="fas fa-minus ml-2"></i></a> {{ order_item.quantity}} <a href="{% url 'app:add-to-card-summary' order_item.item.slug %}"><i class="fas fa-plus"></i></a>
-              
-              </td>
-              <td>
-                {% if order_item.item.discount_price %}
-                ${{ order_item.get_total_discount_item_price }}
-                <span class="badge badge-primary">(Saving: {{ order_item.total_savings }})</span>
-                {% else %}
-                ${{ order_item.get_total_item_price }}
-                {% endif%}
-                <a href="{% url 'app:remove-all-from-card' order_item.item.slug %}"><i style="color: red" class="fas fa-trash float-right"></i></a>
-              </td>           
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="4">Your card is empty</td>
-            </tr>
-            {% endfor %}
-            {% if object.total %}
-            <tr>
-              <td colspan="4"><b>Order Total</b></td>
-              <td>${{ object.total }}</td>
-            </tr>
-            <tr>
-              <td colspan="5">
-                <a href="/checkout/" class="btn btn-warning float-right ml-2">Proceed Checkout</a>
-                <a href="/" class="btn btn-primary float-right"><b>Continue Shopping</b></a>      
-              </td>              
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="4"><b>Order Total</b></td>
-              <td>${{ object.total }}</td>
-            </tr>
-            <tr>
-              <td colspan="5">                
-                <a href="/" class="btn btn-primary float-right"><b>Continue Shopping</b></a>      
-              </td>              
-            </tr>
+                  <li class="page-item active">
+                    <a class="page-link" href="?page={{ page_obj.number }}">
+                      {{ page_obj.number }}
+                      <span class="sr-only">(current)</span>              
+                    </a>
+                  </li>
+                  
+                  {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                      <span class="sr-only">Next</span>
+                    </a>
+                  </li>
+                  {% endif %}
+                </ul>
+              </nav>
             {% endif %}
-
-          </tbody>
-        </table>
-
+            <!--Pagination-->
+              
+            <div class="table-content table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col" class="product-thumbnail">Image</th>
+                    <th scope="col" class="product-name">Item Title</th>
+                    <th scope="col" class="product-price">Price</th>
+                    <th scope="col" class="product-quantity">Quantity</th>
+                    <th scope="col" class="product-subtotal">Total Cost</th>
+                    <th class="product-remove">Remove</th>
+                  
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for order_item in object.items.all %}
+                  <tr>
+                    <th scope="row">{{ forloop.counter}}</th>
+                    <td class="product-thumbnail"><img src="{{ order_item.item.image.url }}"></td>
+                    <td class="product-name"><a href="{{order_item.item.get_absolute_url}}">{{ order_item.item.title}}</a></td>
+                    <td class="product-price">$ {{ order_item.item.price }}</td>
+                    <td class="product-quantity">
+                      <a href="{% url 'app:remove-single-element' order_item.item.slug %}" style="color: red;font-size: 15px;">
+                      -
+                      </a> 
+                        {{ order_item.quantity}} 
+                      <a href="{% url 'app:add-to-card-summary' order_item.item.slug %}" style="color: #05ff67;font-size: 15px;">
+                      +
+                      </a>                    
+                    </td>
+                    <td class="product-subtotal">
+                      {% if order_item.item.discount_price %}
+                      ${{ order_item.get_total_discount_item_price }}
+                      <span class="badge badge-primary">(Saving: {{ order_item.total_savings }})</span>
+                      {% else %}
+                      ${{ order_item.get_total_item_price }}
+                      {% endif%}
+                      
+                    </td>  
+                    <td class="product-remove"><a href="{% url 'app:remove-all-from-card' order_item.item.slug %}" style='color:red;'>X</a></td>         
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="7">Your card is empty</td>
+                  </tr>
+                  {% endfor %}
+                  
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              
+              <div class="col-md-4 col-sm-5 col-xs-12" style="float:right;">
+                {% if object.total %}
+                  <div class="cart_totals">                  
+                      <h5>Cart Totals</h5>
+                        <br />
+                      <h6><strong><span class="amount">${{ object.total }}</span></strong></h6>
+                      <br />                      
+                      <a href="/checkout/" class="btn btn-warning float-right ml-2">Proceed Checkout</a>
+                      <a href="/" class="btn btn-primary float-right"><b>Continue Shopping</b></a> 
+                       
+                  </div>
+                {% else %}
+                <div class="cart_totals">
+                  <h5>Cart Totals</h5>
+                    <br />
+                  <h6><strong><span class="amount">${{ object.total }}</span></strong></h6>
+                  <br />
+                  <a href="/" class="btn btn-primary float-right"><b>Continue Shopping</b></a>
+                </div>
+                {% endif %}
+              </div>
+          </div>
+            
+              
+          </div>
       </div>
     </div>
-  </main>
-  {% endblock %}
+</div>
+{% endblock %}
   <!--Main layout-->
 
   

@@ -1,5 +1,6 @@
 from django import template
 from app.models import Order
+from django.shortcuts import reverse
 
 register = template.Library()
 
@@ -19,7 +20,21 @@ def multiply(value1):
 
 @register.filter
 def subtruct(value1, value2):
-	print('value1',value1)
-	print(value2)
+	
 	return value1 - value2
+
+@register.filter
+def get_slug(item):
+	print('slug',item.slug)
+	slug = item.slug
+	return reverse("app:product", kwargs={"slug": slug})
+
+@register.filter
+def add_to_card_url_tags(item):
+	slug = item.slug
+	return reverse("app:add-to-card",kwargs = {
+			'slug' : slug
+			})
+	 
+
 

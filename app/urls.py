@@ -28,7 +28,12 @@ from .views import (
     PaymentView,
     add_coupon,
     RequestRefundView,
+    ContactView,
+    CategoryDetailView,
+    OrderedItems,
     )
+
+from . import apis
 
 app_name = 'app'
 urlpatterns = [
@@ -36,6 +41,7 @@ urlpatterns = [
     path('',HomeView.as_view(),name='home'),
     path('product/<slug>',ItemDetailView.as_view(),name='product'),
     path('add-to-card/<slug>',add_to_card,name='add-to-card'),
+    path('contact/', ContactView.as_view(), name='contact'),
     path('add-to-card-summary/<slug>',add_to_card_summary,name='add-to-card-summary'),
     path('order-summary/',OrderSummary.as_view(),name='order-summary'),
     path('remove-from-card/<slug>',remove_from_card,name='remove-from-card'),
@@ -45,5 +51,17 @@ urlpatterns = [
     path('remove-single/<slug>/',remove_single_item_from_card,name='remove-single-element'),
     path('payment/<payment_option>',PaymentView.as_view(),name = 'payment'),
     path('request-refund/',RequestRefundView.as_view(),name = 'request-refund'),
+    path('category/<id>/<slug>/', CategoryDetailView.as_view(), name='category'),
+    path('ordered/items/', OrderedItems.as_view(), name='ordered-items'),
+
+
+
+    # APIS
+    path('api/category/', apis.CategoryViewSet.as_view()),
+    path('api/category/<pk>/', apis.CategoryDetailViewSet.as_view({
+        'get':'retrieve', 
+        'delete' : 'destroy',
+        'put' : 'update'
+    })),
    
 ]

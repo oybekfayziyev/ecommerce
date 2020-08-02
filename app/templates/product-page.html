@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load mptt_tags %}
+{% load card_template_tags %}
   <!-- Navbar -->
 {% block title %}Products{% endblock %}
   <!--Main layout-->
   {% block content %}
   <main class="mt-5 pt-4">
+  
 
     <div class="container dark-grey-text mt-5">
 
@@ -13,7 +17,7 @@
         <!--Grid column-->
         <div class="col-md-6 mb-4">
 
-          <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/14.jpg" class="img-fluid" alt="">
+          <img src="{{ object.image.url }}" style="height:400px;" class="img-fluid" alt="">
 
         </div>
         <!--Grid column-->
@@ -26,14 +30,8 @@
 
             <div class="mb-3">
               <a href="">
-                <span class="badge purple mr-1">Category 2</span>
-              </a>
-              <a href="">
-                <span class="badge blue mr-1">New</span>
-              </a>
-              <a href="">
-                <span class="badge red mr-1">Bestseller</span>
-              </a>
+                <span class="badge purple mr-1">{{object.category}}</span>
+              </a>              
             </div>
 
             <p class="lead">
@@ -74,58 +72,69 @@
       <!--Grid row-->
 
       <hr>
-
-      <!--Grid row-->
-      <div class="row d-flex justify-content-center wow fadeIn">
-
-        <!--Grid column-->
-        <div class="col-md-6 text-center">
-
-          <h4 class="my-4 h4">Additional information</h4>
-
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus suscipit modi sapiente illo soluta odit
-            voluptates,
-            quibusdam officia. Neque quibusdam quas a quis porro? Molestias illo neque eum in laborum.</p>
-
-        </div>
-        <!--Grid column-->
-
-      </div>
-      <!--Grid row-->
-
-      <!--Grid row-->
-      <div class="row wow fadeIn">
-
-        <!--Grid column-->
-        <div class="col-lg-4 col-md-12 mb-4">
-
-          <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/11.jpg" class="img-fluid" alt="">
-
-        </div>
-        <!--Grid column-->
-
-        <!--Grid column-->
-        <div class="col-lg-4 col-md-6 mb-4">
-
-          <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/12.jpg" class="img-fluid" alt="">
-
-        </div>
-        <!--Grid column-->
-
-        <!--Grid column-->
-        <div class="col-lg-4 col-md-6 mb-4">
-
-          <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/13.jpg" class="img-fluid" alt="">
-
-        </div>
-        <!--Grid column-->
-
-      </div>
+      
       <!--Grid row-->
 
     </div>
+    <br />
+    <br />
+    <div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Related <b>Products</b></h2>
+			<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="0">
+			<!-- Carousel indicators -->
+			<ol class="carousel-indicators">
+				<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+				<li data-target="#myCarousel" data-slide-to="1"></li>
+				<li data-target="#myCarousel" data-slide-to="2"></li>
+			</ol>   
+			<!-- Wrapper for carousel items -->
+			<div class="carousel-inner">
+				
+				<div class="carousel-item active">
+					<div class="row">
+          			{% for item in category %}
+						<div class="col-sm-3">
+							<div class="thumb-wrapper">
+								<div class="img-box">
+									<img src="{{ item.image.url }}" class="img-fluid" alt="">
+								</div>                
+								<div class="thumb-content">
+									<h4><a href="{{ item|get_slug }}">{{ item.title }}</a></h4>
+									<p class="item-price">{% if item.discount_price %}<strike>${{ item.discount_price}}</strike> {% endif %}<span>${{ item.price }}</span></p>									
+									<a href="{{ item|add_to_card_url_tags }}" class="btn btn-primary">Add to Cart</a>
+								</div>						
+							</div>
+						</div>
+            		{% endfor %}					
+					</div>
+				</div>			
+			</div>
+			<!-- Carousel controls -->
+			<a class="carousel-control-prev" href="#myCarousel" data-slide="prev">
+				<i class="fa fa-angle-left"></i>
+			</a>
+			<a class="carousel-control-next" href="#myCarousel" data-slide="next">
+				<i class="fa fa-angle-right"></i>
+			</a>
+		</div>
+		</div>
+	</div>
+</div>
+      .
   </main>
   {% endblock %}
+
+  {% block css_style %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/product.css' %}">
+  {% endblock css_style %}
   <!--Main layout-->
 
 

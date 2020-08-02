@@ -5,133 +5,53 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>{% block head_title %}{% endblock %}</title>
-  {% block extra_head %}
-    {% endblock %}
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
-  <!-- Bootstrap core CSS -->
-  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-  <!-- Material Design Bootstrap -->
-  <link href="{% static 'css/mdb.min.css' %}" rel="stylesheet">
-  <!-- Your custom styles (optional) -->
-  <link href="{% static 'css/style.min.css' %}" rel="stylesheet">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %}
+    {% endblock title %}</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Place favicon.ico in the root directory -->
+    
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
 
-  <style type="text/css">
-    html,
-    body,
-    header,
-    .carousel {
-      height: 60vh;
-    }
+    <!-- All css files are included here. -->
+    <!-- Bootstrap fremwork main css -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- Owl Carousel main css -->
+    
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+    <!-- This core.css file contents all plugings css file. -->
+    <link rel="stylesheet" href="{% static 'css/core.css' %}">
+    <!-- Theme shortcodes/elements style -->
+    <link rel="stylesheet" href="{% static 'css/shortcode/shortcodes.css' %}">
+    <!-- Theme main style -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Responsive css -->
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <!-- User style -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
-    @media (max-width: 740px) {
-
-      html,
-      body,
-      header,
-      .carousel {
-        height: 100vh;
-      }
-    }
-
-    @media (min-width: 800px) and (max-width: 850px) {
-
-      html,
-      body,
-      header,
-      .carousel {
-        height: 100vh;
-      }
-    }
-
-  </style>
+    {% block css_style %}
+    {% endblock css_style %}
+   
+    <!-- Modernizr JS -->
+    <script src="{% static 'js/vendor/modernizr-2.8.3.min.js' %}"></script>
+ 
 </head>
 
 <body>
-  <nav class="navbar fixed-top navbar-expand-lg navbar-light white scrolling-navbar">
-    <div class="container">
 
-      <!-- Brand -->
-      <a class="navbar-brand waves-effect" href="{% url 'app:home' %}">
-        <strong class="blue-text">eCommerce</strong>
-      </a>
+  <div class="wrapper fixed__footer">
 
-      <!-- Collapse -->
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    {% include 'navbar.html' %}
 
-      <!-- Links -->
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-        <!-- Left -->
-        <ul class="navbar-nav mr-auto">
-         
-            <li class="nav-item {% if request.path == '/'%} active {% endif %}">
-              <a class="nav-link waves-effect" href="{% url 'app:home' %}">Home
-                {% comment %} <span class="sr-only">(current)</span> {% endcomment %}
-              </a>
-            </li>  
-            <li class="nav-item">
-              <a class="nav-link waves-effect" href="{% url 'app:home' %}">Contact Page
-                {% comment %} <span class="sr-only">(current)</span> {% endcomment %}
-              </a>
-            </li>         
-          <li class="nav-item {% if request.path == '/checkout/'%}active{% endif %}">
-            <a class="nav-link waves-effect" href="{% url 'app:checkout' %}"
-              >CheckOut</a>
-          </li>
-          
-        </ul>
-
-        <!-- Right -->
-        <ul class="navbar-nav nav-flex-icons">
-          {% if user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link waves-effect" href="{% url 'app:order-summary' %}">
-              <span class="badge red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>
-              <i class="fas fa-shopping-cart"></i>
-              <span class="clearfix d-none d-sm-inline-block"> Cart </span>
-            </a>
-          </li>
-          
-          <li class="nav-item">
-            <a class="nav-link waves-effect" href="{% url 'account_logout' %}">              
-              <span class="clearfix d-none d-sm-inline-block"> Logout </span>
-            </a>
-          </li>  
-          {% else %}
-          <li class="nav-item">
-            <a class="nav-link waves-effect" href="{% url 'account_login' %}">              
-              <span class="clearfix d-none d-sm-inline-block"> Login </span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link waves-effect" href="{% url 'account_signup' %}">              
-              <span class="clearfix d-none d-sm-inline-block"> Signup </span>
-            </a>
-          </li>
-          
-          {% endif %}       
-        </ul>
-
-      </div>
-
-    </div>
-  </nav>
-
-  
-
-  {% block carousel %}
-  {% endblock %}
-  <div class="mt-5 pt-4">
+    <div class="mt-5 pt-4">
     {% if messages %}
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <div class="alert alert-{{ message.tags }}" role="alert">
           {{ message }}
           <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
@@ -140,41 +60,35 @@
         {% endfor %}
     {% endif %}
     </div>
-  
-  {% block content %}
-  {% endblock %}
+    <div class="body__overlay"></div>
+    {% block category %}
+    {% endblock category %}
 
-  {% block extra_body %}
-  {% endblock %}
+    {% block content %}
+    {% endblock content %}
 
+    
 
- 
-
-  {% block footer %}
-  {% endblock %}
-
-  {% block extra_scripts %}
-  {% endblock extra_scripts %}
+    {% block extra_scripts %}
+    {% endblock extra_scripts %}
   
 
-<!--/.Footer-->
 
-  <!-- SCRIPTS -->
-  <!-- JQuery -->
 
-  <script type="text/javascript" src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
-  <!-- Bootstrap tooltips -->
-  <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
-  <!-- Bootstrap core JavaScript -->
-  <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-  <!-- MDB core JavaScript -->
-  <script type="text/javascript" src="{% static 'js/mdb.min.js' %}"></script>
-  <!-- Initializations -->
-  <script type="text/javascript">
-    // Animations initialization
-    new WOW().init();
+  </div>
+  
+  <script src="{% static 'js/vendor/jquery-1.12.0.min.js' %}"></script>
+  <!-- Bootstrap framework js -->
+  <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  <!-- All js plugins included in this file. -->
+  <script src="{% static 'js/plugins.js' %}"></script>
+  <script src="{% static 'js/slick.min.js' %}"></script>
+  <script src="{% static 'js/owl.carousel.min.js' %}"></script>
+  <!-- Waypoints.min.js. -->
+  <script src="{% static 'js/waypoints.min.js' %}"></script>
+  <!-- Main js file that contents all jQuery plugins activation. -->
+  <script src="{% static 'js/main.js' %}"></script>
 
-  </script>
 </body>
 
 </html>
