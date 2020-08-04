@@ -16,8 +16,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 application = get_wsgi_application()
 
 
-from my_project import MyWSGIApp
+from whitenoise.django import DjangoWhiteNoise
 
-application = MyWSGIApp()
+application = DjangoWhiteNoise(application)
 # application = WhiteNoise(application, root='/path/to/static/files')
 # application.add_files('/path/to/more/static/files', prefix='more-files/')
