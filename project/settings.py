@@ -27,7 +27,7 @@ SECRET_KEY = '7pnm5hto(j4s6$6%h5syxxmtt%4aprna5w0zi*kmyn5n5h^^u$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['djangoe-commercewebsite.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
@@ -143,7 +143,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-ALLOWED_HOSTS = ['djangoe-commercewebsite.herokuapp.com']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -176,4 +175,4 @@ PROMO_CODE_LIST = [
     'KINGOFTHESEAS'
 ]
 
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
