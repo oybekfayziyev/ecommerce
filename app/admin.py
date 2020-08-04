@@ -43,6 +43,11 @@ class OrderAdmin(admin.ModelAdmin):
 
 	actions = [make_refund_accepted]
 
+class OrderItemAdmin(admin.ModelAdmin):
+	list_display = [
+		'item','user','quantity','ordered'
+	]
+
 class AddressAdmin(admin.ModelAdmin):
 	list_display = [
 		'user',
@@ -109,7 +114,7 @@ class CategoryAdmin(DraggableMPTTAdmin):
     related_item_cumulative_count.short_description = 'Related products (in tree)'
 
 admin.site.register(Order,OrderAdmin)
-admin.site.register(OrderItem)
+admin.site.register(OrderItem,OrderItemAdmin)
 admin.site.register(Item,ItemAdmin)
 admin.site.register(Address)
 admin.site.register(Payment)

@@ -29,13 +29,13 @@ def get_client_ip(request):
 
 def get_file_ext(filepath):
     base_name = os.path.basename(filepath)
-    print('base',base_name)
+
     name, ext = os.path.splitext(base_name)
 
     return name, ext
 
 def upload_image_path(instance, filename):
-    print('filename',filename)
+    
     new_filename = random.randint(1,3910209312)
     name, ext = get_file_ext(filename)
     print(name)
@@ -45,4 +45,15 @@ def upload_image_path(instance, filename):
             final_filename=final_filename
             )
 
-    
+def reference_code():
+	return ''.join(random.choices(string.ascii_lowercase + string.digits,k=20))
+
+def is_valid_form(values):
+	valid = True
+
+	for field in values:
+		if field == '':
+			valid = False
+	
+	return valid
+

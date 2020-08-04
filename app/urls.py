@@ -15,22 +15,27 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import (
-	HomeView,
-	ItemDetailView,
-    OrderSummary,  
-    Checkout,
+from .cart_views import (
     add_to_card,
     remove_from_card,
     add_to_card_summary,
     remove_single_item_from_card,
     remove_all_item_from_card,
+    )
+from .views import (
+	HomeView,
+	ItemDetailView,
+    OrderSummary,  
+    Checkout,
+    
     PaymentView,
     add_coupon,
     RequestRefundView,
     ContactView,
     CategoryDetailView,
     OrderedItems,
+    OrderStatus,
+    RequestRefundedView
     )
 
 from . import apis
@@ -50,9 +55,11 @@ urlpatterns = [
     path('add-coupon/',add_coupon, name='add-coupon'),
     path('remove-single/<slug>/',remove_single_item_from_card,name='remove-single-element'),
     path('payment/<payment_option>',PaymentView.as_view(),name = 'payment'),
-    path('request-refund/',RequestRefundView.as_view(),name = 'request-refund'),
+    path('request-refund/<id>/',RequestRefundView.as_view(),name = 'request-refund'),
+    path('request-refunded/<id>', RequestRefundedView.as_view(), name='request-refunded'),
     path('category/<id>/<slug>/', CategoryDetailView.as_view(), name='category'),
     path('ordered/items/', OrderedItems.as_view(), name='ordered-items'),
+    path('order-status/<id>/', OrderStatus.as_view(), name='order-status'),
 
 
 

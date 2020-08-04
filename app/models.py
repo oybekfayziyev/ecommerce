@@ -36,6 +36,9 @@ ADDRESS_CHOICES = (
 	('B', 'Billing')
 )
 
+
+
+
 class ItemQuerySet(models.QuerySet):
 
 	def search(self, query):
@@ -117,6 +120,7 @@ class Category(MPTTModel):
 	class Meta:
 		verbose_name_plural = 'Categories'
 
+
 def generate_slug(sender, instance, *args, **kwargs):
 	if not instance.slug:
 		instance.slug = generate_unique_slug(instance)
@@ -129,7 +133,7 @@ class OrderItem(models.Model):
 
 	user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,blank=True,null=True)
 	ordered = models.BooleanField(default=False)
-	item = models.ManyToManyField(Item)
+	item = models.ForeignKey(Item,on_delete=models.CASCADE,blank=True,null=True)
 	quantity = models.FloatField(default=1)
 	
 	def __str__(self):
@@ -179,6 +183,7 @@ class Order(models.Model):
 	shipping_address = models.ForeignKey('Address', related_name = 'shipping_address', on_delete = models.SET_NULL, blank=True, null=True)
 	payment = models.ForeignKey('Payment', on_delete = models.SET_NULL, blank=True, null = True)
 	coupon = models.ForeignKey('Coupon',on_delete = models.SET_NULL,blank = True,null=True)
+	status_changed = models.BooleanField(default=False)
 	being_delivered = models.BooleanField(default = False)
 	received = models.BooleanField(default = False)
 	refund_requested = models.BooleanField(default=False)
@@ -196,6 +201,23 @@ class Order(models.Model):
 		if total < 0:
 			total = 0
 		return total
+	
+	def get_order_id(self):
+		 
+		return reverse('app:order-status', kwargs={
+			'id' : self.id
+		})
+	
+	def request_refund(self):
+		return reverse('app:request-refund', kwargs={
+			'id' : self.id
+		})
+
+	def request_refunded(self):
+		return reverse('app:request-refunded', kwargs={
+			'id' : self.id
+		})
+	
 
 class Payment(models.Model):
 	stripe_id = models.CharField(max_length = 30)

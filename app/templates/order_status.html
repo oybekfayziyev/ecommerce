@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+<h2> Did you get the product ?</h2>
+
+<br />
+<br />
+<form method="POST">
+    {% csrf_token %}
+    <button class="btn btn-success">Received</button>  
+</form>
+<br />
+<h4> Note: After one hour from ordered date status will change automatically to Delivered </h4>
+
+</div>
+{% endblock %}

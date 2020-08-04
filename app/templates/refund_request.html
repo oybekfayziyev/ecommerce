@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<main class="mt-5 pt-4">
+  <div class="container">
+    <h2 class="text-center"> Your refund request is on the process. Please wait sometime</h2>
+    <br />
+    <form method="POST" id="stripe-form">
+        {% csrf_token %}
+        <h4> If you have any extra information please feel free to ask</h4>
+        {{ form|crispy }}
+      <button class="btn btn-primary">Submit</button>
+    </form>
+    
+  </div>
+</main>
+{% endblock %}

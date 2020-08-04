@@ -7,25 +7,23 @@ from django.shortcuts import get_object_or_404,redirect
 from django.utils import timezone
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-from app.forms import CheckoutForm, CouponForm, RequestRefundForm
+from app.forms import CheckoutForm, CouponForm, RequestRefundForm, RequestRefundedForm
 from .models import Address,Payment,Coupon,Refund, Category
 from .mixins import ObjectViewedMixin
 from .exceptions import ImmediateHttpResponse
 from allauth.account.views import LoginView
 
-from .utils.core import get_promo_code
+from .utils.utils import reference_code, is_valid_form
+from .utils.core import (get_promo_code, is_ordered,						
+						get_category)
 # Create your views here.
 
 import stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-import string
-import random
 
-def reference_code():
-	return ''.join(random.choices(string.ascii_lowercase + string.digits,k=20))
 
 
 class HomeView(ListView):
@@ -90,46 +88,7 @@ class ItemDetailView(DetailView):
 
 		return item
 
-def get_all_leaf_nodes(tree):
 
-	elem = []
-	print('len',len(tree))
-	print('tree',tree)
-	length = len(tree)
-	counter = 0
-	is_leaf_node = True
-	while is_leaf_node:
-		try:
-			for i in tree:
-				counter = counter + 1
-				print('tree',i)
-				if i.is_leaf_node():
-					elem.append(i)
-				else:
-					print('i',i)
-					print('get',get_all_leaf_nodes(i))
-					i = get_all_leaf_nodes(i).get_children()
-				print('here')
-			is_leaf_node = False		
-		except:			 	
-			tree = tree[counter:]
-			print('catttt',tree)
-
-	return elem
-	
-def get_category(id, slug):
-	try:
-		category = Category.objects.filter(slug = slug)
-		 
-		if not category[0].is_leaf_node():
-			 
-			category = category.get_descendants(include_self=False)
-			category = [i for i in category]
-			return category
-		else:		 
-			return category[0]
-	except ObjectDoesNotExist:
-		return None
 
 class CategoryDetailView(DetailView):
 
@@ -139,7 +98,7 @@ class CategoryDetailView(DetailView):
 	def get_object(self, *args, **kwargs):
 
 		try:
-			elements = get_category(self.kwargs.get('id'), self.kwargs.get('slug'))			 
+			elements = get_category(Category, self.kwargs.get('id'), self.kwargs.get('slug'))			 
 			category = Category.objects.filter(title__in = elements)			
 			items = Item.objects.filter(category__in = category)		 
 		except TypeError:			 
@@ -150,7 +109,7 @@ class CategoryDetailView(DetailView):
 
 	def get_context_data(self, *args, **kwargs):
 		context = super(CategoryDetailView, self).get_context_data(*args, **kwargs)
-		category = get_category(self.kwargs.get('id'), self.kwargs.get('slug'))			 
+		category = get_category(Category, self.kwargs.get('id'), self.kwargs.get('slug'))			 
 		query = self.request.GET.get('search')		 
 		context["query"] = query
 		context['category'] = category		 
@@ -170,144 +129,53 @@ class OrderedItems(ListView):
 	template_name = 'ordered.html'
 	
 	def get_queryset(self):
-		orders = Order.objects.filter(user = self.request.user, ordered = True)		
+		is_product_ordered = []
+		orders = Order.objects.filter(user = self.request.user, ordered = True).order_by('-ordered_date')
+		
+		for order in orders:
+			is_product_ordered.append(is_ordered(order.ordered_date, order.status_changed))
+		# is_product_ordered = is_ordered([date.ordered_date for date in orders])
+		print(is_product_ordered)
+		for index, i in enumerate(is_product_ordered):
+			
+			if i:			 			
+				orders[index].being_delivered = False
+				orders[index].received = True
+			else:			 
+				orders[index].being_delivered = True
+				orders[index].received = False
+			
+			orders[index].save()
 		return orders
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context["orders"] = self.get_queryset()
-		return context	
-	
-@login_required
-def add_to_card_summary(request,slug):
-	item = get_object_or_404(Item,slug=slug)
-	order_item,created = OrderItem.objects.get_or_create(item=item,user = request.user, ordered=False)
-	order_qs = Order.objects.filter(user=request.user,ordered=False)
-
-	if order_qs.exists():
-		order = order_qs[0]
-
-		if order.items.filter(item__slug=item.slug).exists():
-			order_item.quantity += 1
-			order_item.save()
-			messages.info(request,"This item updated")
-			return redirect("app:order-summary")
-		else:
-			messages.info(request,"This item added to your card")
-			order.items.add(order_item)
-			return redirect("app:order-summary")
-	else:
-		messages.info(request,"Order created")
-		ordered_date = timezone.now()
-		order = Order.objects.create(user=request.user,ordered_date = ordered_date)
-		order.items.add(order_item)
-
-		return redirect("app:product")
-
-@login_required
-def add_to_card(request,slug):
-	item = get_object_or_404(Item,slug=slug)
-	order_item,created = OrderItem.objects.get_or_create(item=item,user = request.user, ordered=False)
-	order_qs = Order.objects.filter(user=request.user,ordered=False)
-
-	if order_qs.exists():
-		order = order_qs[0]
-
-		if order.items.filter(item__slug=item.slug).exists():
-			order_item.quantity += 1
-			order_item.save()
-			messages.info(request,"This item updated")
-			return redirect("app:product",slug=slug)
-		else:
-			messages.info(request,"This item added to your card")
-			order.items.add(order_item)
-			return redirect("app:product",slug=slug)
-	else:
-		messages.info(request,"Order created")
-		ordered_date = timezone.now()
-		order = Order.objects.create(user=request.user,ordered_date = ordered_date)
-		order.items.add(order_item)
-
-		return redirect("app:product",slug=slug)
 		
+		context["orders"] = self.get_queryset()	
+		
+		return context	
 
-@login_required
-def remove_from_card(request,slug):
-	item = get_object_or_404(Item,slug=slug)
-	order_qs = Order.objects.filter(user=request.user,ordered=False)
+class OrderStatus(View):
 
-	if order_qs.exists():
-		order = order_qs[0]
-		if order.items.filter(item__slug = item.slug).exists():
-			messages.info(request,"Order removed successfully")
-			order_item = OrderItem.objects.filter(user=request.user,item=item,ordered=False)[0]
-			# order_item.quantity = 0				
-			order.items.remove(order_item)
-			order_item.delete()
-			# order.save()
-			# order_item.save()
-		else:
-			messages.info(request,"This item was not in your card")
-			return redirect("app:product",slug=slug)
-	else:
-		messages.info(request,"Order does not exist")
-		return redirect("app:product",slug=slug)
+	def get(self, *args, **kwargs):
 
-	return redirect("app:product",slug=slug)
-
-@login_required
-def remove_single_item_from_card(request,slug):
-	item = get_object_or_404(Item,slug=slug)
-	order_qs = Order.objects.filter(user=request.user,ordered=False)
-
-	if order_qs.exists():
-		order = order_qs[0]
-		if order.items.filter(item__slug = item.slug).exists():
-			messages.info(request,"Order removed successfully")
-			order_item = OrderItem.objects.filter(user=request.user,item=item,ordered=False)[0]	
-			if order_item.quantity > 1:
-				order_item.quantity -= 1
-				order_item.save()
-			else:
-				order.items.remove(order_item)
-				order_item.delete()
-			# order.save()
-			
-			return redirect("app:order-summary")
-		else:
-			messages.info(request,"This item was not in your card")
-			return redirect("app:order-summary",slug=slug)
-	else:
-		messages.info(request,"Order does not exist")
-		return redirect("app:order-summary",slug=slug)
-
-	return redirect("app:order-summary",slug=slug)
-
-@login_required
-def remove_all_item_from_card(request,slug):
-	item = get_object_or_404(Item,slug=slug)
-	order_qs = Order.objects.filter(user=request.user,ordered=False)
-
-	if order_qs.exists():
-		order = order_qs[0]
-		if order.items.filter(item__slug = item.slug).exists():
-			messages.info(request,"Order removed successfully")
-			order_item = OrderItem.objects.filter(user=request.user,item=item,ordered=False)[0]	
-			
-			order.items.remove(order_item)
-			order_item.delete()
-			# order_item.quantity = 0
-			# order_item.save()
-			return redirect("app:order-summary")
-		else:
-			messages.info(request,"This item was not in your card")
-			return redirect("app:order-summary",slug=slug)
-	else:
-		messages.info(request,"Order does not exist")
-		return redirect("app:order-summary",slug=slug)
-
-	return redirect("app:order-summary",slug=slug)
-
+		return render(self.request, 'order_status.html' )
+	 
+	def post(self, *args, **kwargs):
+		order_id = self.kwargs.get('id')
+		try:
+			order = Order.objects.get(id = order_id)
+			 
+			order.being_delivered = False
+			order.received = True
+			order.status_changed = True
+			order.save()
+			 
+			messages.info(self.request, "{} order status has been changed to Received".format(order))
+			return redirect('app:ordered-items')
+		except ObjectDoesNotExist:
+			messages.info(self.request, "Order id is not valid")
+			return redirect("app:ordered-items")
 class Checkout(View):
 	
 	def get(self,*args,**kwargs):
@@ -359,14 +227,13 @@ class Checkout(View):
 		coupon_form = CouponForm(self.request.POST or None)
 		
 		try:
-			order = Order.objects.get(user=self.request.user,ordered=False,items__user = self.request.user)
-			print('order',order)			
-
+			order = Order.objects.filter(user=self.request.user,ordered=False,items__user = self.request.user)[0]
+			
 			if form.is_valid():
-			
-			
+				
+				 
 				use_defaul_shipping = form.cleaned_data.get('use_default_shipping')
-
+				
 				if use_defaul_shipping:
 					address_qs = Address.objects.filter(
 						user = self.request.user,
@@ -482,14 +349,6 @@ class Checkout(View):
 			messages.error(self.request,"You do not have an active order")
 			return redirect("app:order-summary") 
 
-def is_valid_form(values):
-	valid = True
-
-	for field in values:
-		if field == '':
-			valid = False
-	
-	return valid
 
 class PaymentView(View):
 
@@ -516,6 +375,7 @@ class PaymentView(View):
 			  source=token	
 			)	
 			order.ordered = True
+			order.ordered_date = timezone.now()
 			# create payment 
 			payment = Payment()
 			payment.stripe_id = charge['id']
@@ -622,13 +482,14 @@ class RequestRefundView(View):
 		form = RequestRefundForm(self.request.POST)
 		
 		if form.is_valid():			
-			ref_code = form.cleaned_data.get('ref_code')
-			message = form.cleaned_data.get('message')
+			
+			message = form.cleaned_data.get('reason_for_refund')
 			email = form.cleaned_data.get('email')
 
 			try:
-				order = Order.objects.get(ref_code = ref_code)
+				order = Order.objects.get(id = self.kwargs.get('id'))
 				print('Order',order)
+				
 				order.refund_requested = True
 				order.save()
 
@@ -639,11 +500,31 @@ class RequestRefundView(View):
 				refund.save()
 
 				messages.info(self.request,"You request has been sent successfully")
-				return redirect("app:request-refund")
+				return redirect("app:ordered-items")
 
 			except ObjectDoesNotExist:
 				messages.info(self.request,"This order does not exist")
-				return redirect("app:request-refund")
+				return redirect("app:ordered-items")
+
+class RequestRefundedView(View):
+
+	def get(self,*args,**kwargs):
+		form = RequestRefundedForm()
+		context = {
+			'form' : form
+		}
+		return render(self.request,"refund_request.html",context)
+
+	def post(self,*args,**kwargs):
+		form = RequestRefundedForm(self.request.POST)
+		
+		if form.is_valid():			
+			
+			message = form.cleaned_data.get('reason_for_refund')
+			email = form.cleaned_data.get('email')
+
+			messages.info(self.request,"You refund request form has been updated")
+			return redirect("app:ordered-items")
 
 class ContactView(TemplateView):
 	template_name = 'contact.html'
