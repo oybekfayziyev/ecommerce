@@ -3,7 +3,9 @@
 {% get_providers as socialaccount_providers %}
 
 {% for provider in socialaccount_providers %}
+ 
 {% if provider.id == "openid" %}
+
 {% for brand in provider.get_brands %}
 <li>
   <a title="{{brand.name}}" 
@@ -16,7 +18,10 @@
 {% endif %}
 
 <li class="text-center">
-  <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}} text-uppercase" 
-     href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}" >{{provider.name}}</a>
+  {% if not provider.name == 'Facebook'%}
+
+  <button class="btn btn-default"><a title="{{provider.name}}" class="socialaccount_provider {{provider.id}} text-uppercase" 
+     href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}" >{{provider.name}}</a></button>
+  {% endif %}
 </li>
 {% endfor %}

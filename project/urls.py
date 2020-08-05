@@ -21,7 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('app.urls')),
     path('accounts/', include('allauth.urls')),
-    path('auth/', include('rest_framework_social_oauth2.urls')),
+    # path('auth/', include('rest_framework_social_oauth2.urls')),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT) + static(settings.STATIC_URL,document_root = settings.STATIC_ROOT)
 # if settings.DEBUG:
 #     import debug_toolbar
