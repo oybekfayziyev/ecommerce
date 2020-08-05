@@ -40,15 +40,23 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
-    'django.contrib.sites',    
+    'django.contrib.sites', 
+    # ALL AUTH   
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    # ALLAUTH PROVIDERS
+    'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.google',
     'crispy_forms',
     'django_countries',
     'jquery',
     'mptt',
     'rest_framework',
+    # SOCIAL OAUTH
+    'oauth2_provider',
+    'social_django',
+    'rest_framework_social_oauth2',
 ]
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
@@ -77,6 +85,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -127,7 +137,23 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [     
     'django.contrib.auth.backends.ModelBackend', 
     'allauth.account.auth_backends.AuthenticationBackend', 
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.facebook.FacebookOAuth2',
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+5. 
 
 
 # Internationalization
@@ -176,3 +202,13 @@ PROMO_CODE_LIST = [
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+SOCIAL_AUTH_FACEBOOK_KEY = '1785377054953043'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'c18bce52c42da732d1669ecd24ae1fbc'
+
+# Define SOCIAL_AUTH_FACEBOOK_SCOPE to get extra permissions from Facebook.
+# Email is not sent by default, to get it, you must request the email permission.
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+} 

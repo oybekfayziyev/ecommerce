@@ -39,11 +39,12 @@ from .views import (
     )
 
 from . import apis
+from django.views.generic import TemplateView
 
 app_name = 'app'
 urlpatterns = [
     # path('', views.home,name='home'),
-    path('',HomeView.as_view(),name='home'),
+    path('',HomeView.as_view(),name='home'),   
     path('product/<slug>',ItemDetailView.as_view(),name='product'),
     path('add-to-card/<slug>',add_to_card,name='add-to-card'),
     path('contact/', ContactView.as_view(), name='contact'),
