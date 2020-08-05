@@ -195,3 +195,12 @@ PROMO_CODE_LIST = [
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# EMAIL SETTINGS
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'oybekfayziyev97@gmail.com'
+EMAIL_HOST_PASSWORD = 'gzrqslomtfjlvarb'
+DEFAULT_FROM_EMAIL = 'Python ecommerce <oybekfayziyev97@gmail.com>'
