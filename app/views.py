@@ -70,6 +70,7 @@ class ItemDetailView(DetailView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)			 
 		root_nodes = Category.objects.root_nodes()
+	 
 		node = Category.objects.get(title = self.get_object().category)
 		root = node.get_root()
 		siblings = node.get_siblings(include_self=True)	
@@ -80,7 +81,8 @@ class ItemDetailView(DetailView):
 
 	def get_object(self, *args, **kwargs):
 		try:
-			item = Item.objects.get(slug = self.kwargs.get('slug'))		
+			item = Item.objects.get(slug = self.kwargs.get('slug'))	
+				
 		except ObjectDoesNotExist:
 			messages.info(self.request, "Product slug is not found")
 			return redirect('/')
@@ -88,7 +90,10 @@ class ItemDetailView(DetailView):
 
 		return item
 
+	def get_queryset(self):
 
+		return super().get_queryset()
+	
 
 class CategoryDetailView(DetailView):
 
@@ -100,7 +105,8 @@ class CategoryDetailView(DetailView):
 		try:
 			elements = get_category(Category, self.kwargs.get('id'), self.kwargs.get('slug'))			 
 			category = Category.objects.filter(title__in = elements)			
-			items = Item.objects.filter(category__in = category)		 
+			items = Item.objects.filter(category__in = category)
+					 
 		except TypeError:			 
 			category = Category.objects.filter(title = elements)			 
 			items = Item.objects.filter(category = category[0])
@@ -109,10 +115,14 @@ class CategoryDetailView(DetailView):
 
 	def get_context_data(self, *args, **kwargs):
 		context = super(CategoryDetailView, self).get_context_data(*args, **kwargs)
-		category = get_category(Category, self.kwargs.get('id'), self.kwargs.get('slug'))			 
-		query = self.request.GET.get('search')		 
+		category = get_category(Category, self.kwargs.get('id'), self.kwargs.get('slug'))	
+		category_ = Category.objects.get(slug= self.kwargs.get('slug'))		 
+		query = self.request.GET.get('search')	
+		print('query',query)	 
 		context["query"] = query
-		context['category'] = category		 
+		context['category'] = category
+		context['category_'] = category_	
+			 
 		return context
 	
 	def get_queryset(self, *args, **kwargs):

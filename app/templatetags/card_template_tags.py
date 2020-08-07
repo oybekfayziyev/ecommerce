@@ -36,6 +36,15 @@ def add_to_card_url_tags(item):
 			'slug' : slug
 			})
 	 
+@register.filter
+def get_first_element(item):
+	return item[0]
 
-	
+@register.filter
+def get_root(category):
+	return category.get_root()
+
+@register.filter
+def get_children(category):
+	return category.get_children()
 

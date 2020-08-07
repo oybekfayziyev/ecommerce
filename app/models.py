@@ -25,11 +25,6 @@ CATEGORY_CHOICES = (
 	('SW','Sport Wear'),
 	('OW','Outwear')
 )
-LABEL_CHOICES = (
-	('P','primary'),
-	('D','danger'),
-	('S','secondary')
-)
 
 ADDRESS_CHOICES = (
 	('S', 'Shipping'),
@@ -69,14 +64,17 @@ class ItemManager(models.Manager):
 
 class Item(models.Model):
 	title = models.CharField(max_length=100)
-	price = models.FloatField()
+	price = models.FloatField(blank=True,null=True)
 	discount_price = models.FloatField(blank=True,null=True)
-	category = models.ForeignKey('Category', on_delete=models.CASCADE)
-	label = models.CharField(choices=LABEL_CHOICES,max_length=1)
+	category = models.ForeignKey('Category', on_delete=models.CASCADE)	
 	description = models.TextField()
 	slug = models.SlugField(blank=True, null=True)
 	image = models.ImageField(upload_to = upload_image_path, blank=True,null=True)
-	
+	production_year = models.CharField(max_length = 4, blank=True, null=True)
+	color = models.CharField(max_length = 64, blank=True, null=True)
+	condition = models.CharField(max_length = 64, blank=True,null=True)
+	gas_type = models.CharField(max_length = 32, blank=True, null=True)
+	size = models.CharField(max_length=32, blank=True, null=True)
 	objects = ItemManager()
 
 	def __str__(self):
@@ -97,6 +95,7 @@ class Item(models.Model):
 		return reverse("app:remove-from-card",kwargs = {
 			'slug' : self.slug
 			})
+
 	
 class Category(MPTTModel):
 	title = models.CharField(max_length=30)
