@@ -97,10 +97,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ecommerce',
+        'NAME': '<db name>',
         # 'DATABASE' : '',
-        'USER' : 'postgres',
-        'PASSWORD' : 'qwerty123',
+        'USER' : '<user>',
+        'PASSWORD' : '<password>',
         'HOST' : '127.0.0.1',
         'PORT' : '5432'
     },
@@ -146,7 +146,7 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
-5. 
+ 
 
 
 # Internationalization
@@ -201,6 +201,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'your email'
-EMAIL_HOST_PASSWORD = '<your password>'
-DEFAULT_FROM_EMAIL = 'Python ecommerce <your email>'
+EMAIL_HOST_USER = '<email here>'
+EMAIL_HOST_PASSWORD = '<email password>'
+DEFAULT_FROM_EMAIL = 'Python ecommerce <email>'

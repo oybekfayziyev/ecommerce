@@ -45,6 +45,9 @@ class ItemQuerySet(models.QuerySet):
 	
 		return self.filter(lookups).distinct()
 		# return super().filter(title__icontains=query)
+	
+	# def and_search(self, query):
+	# 	lookups = (Q())
 
 class ItemExtraImage(models.Model):
 	title = models.CharField(max_length = 64, null=True,blank=True)

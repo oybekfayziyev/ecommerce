@@ -53,18 +53,81 @@
             
                 <div class="pull-right">
                 <div class="row" id="filter">
-                    <form>                     
-                        <div class="form-group col-sm-2 col-xs-6">
-                            Color
-                            <select data-filter="model" name="colors" id="colors" class="filter-model filter form-control">
-                                <option value="all">All</option>
-                                {% for item in object %}
-                                <option value="{{item.color}}">{{item.color}}</option>
-                                {% endfor %}
-                            </select>
-                        </div> 
+                    <form>                   
+                        <ul class="nav nav-tabs mt-5 col-sm-2">
+                            <li class="nav-item dropdown" >
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Color</a>
+                                <div class="dropdown-menu">                                    
+                                    {% for color in colors %}                                      
+                                        {% if color is not None %}                                  
+                                            <input type="checkbox" id="" name="color-{{color}}" value="{{color}}">
+                                            <label for=""> {{color}}</label><br>
+                                        {% endif%}
+                                    {% endfor %}
+                                </div>
+                            </li>
+                        </ul>  
 
-                        <p class="col-sm-2">Price Range</p>
+                        {% if category_.get_root.title == "Apparel" %}
+                        <ul class="nav nav-tabs mt-5 col-sm-2">
+                            <li class="nav-item dropdown" >
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Sizes</a>
+                                <div class="dropdown-menu">
+                                    {% for size in sizes %}
+                                        {% if size is not None %} 
+                                            <input type="checkbox" id="" name="size-{{size}}" value="{{size}}">
+                                            <label for=""> {{size}}</label><br>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </li>                            
+                        </ul>                        
+                        
+                        {% endif %}
+                        
+                        {% if category_.get_root.title == "Transport" and category_.title != "Car parts" %}
+
+                        <ul class="nav nav-tabs mt-5 col-sm-2">
+                            <li class="nav-item dropdown" >
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Gas Type</a>
+                                <div class="dropdown-menu">
+                                    {% for gas_type in gas_types %}
+                                        {% if gas_type is not None %} 
+                                            <input type="checkbox" id="" name="gas_type-{{gas_type}}" value="{{gas_type}}">
+                                            <label for=""> {{gas_type}}</label><br>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </li>
+                        </ul>
+                        <ul class="nav nav-tabs mt-5 col-sm-2"> 
+                            <li class="nav-item dropdown" >
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Condition</a>
+                                <div class="dropdown-menu">
+                                    {% for condition in conditions %}
+                                        {% if condition is not None %} 
+                                            <input type="checkbox" id="" name="condition-{{condition}}" value="{{condition}}">
+                                            <label for=""> {{condition}}</label><br>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </li>
+                            
+                        </ul>
+                         
+                        <p class="col-sm-2">Production Year:</p>
+                        <div class="form-group col-sm-2">                            
+                            <input type="text" placeholder="Year From..." value="" name='year-from' class="form-control">
+                        </div>
+                        <div class="form-group col-sm-2">                           
+                            <input type="text" placeholder="Year To..." value="" name='year-to' class="form-control">
+                        </div>
+                        
+                        
+                       
+                        {% endif %}
+
+                        <p class="col-sm-2">Price Range:</p>
                         <div class="form-group col-sm-2">                            
                             <input type="text" placeholder="Price From..." value="" name='price-from' class="form-control">
                         </div>
@@ -72,51 +135,7 @@
                             <input type="text" placeholder="Price To..." value="" name='price-to' class="form-control">
                         </div>                                                        
                        
-                        {% if category_.get_root.title == "Apparel" %}
-                        <div class="form-group col-sm-2 col-xs-6">
-                            Size
-                            <select data-filter="type" name="sizes" id="sizes" class="filter-type filter form-control">
-                                <option value="all">All</option>
-                                {% for item in object %}
-                                <option value="{{item.size}}">{{item.size}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        {% endif %}
-                        
-                        {% if category_.get_root.title == "Transport" and category_.title != "Car parts" %}
-                         
-                        <p class="col-sm-2">Production Year</p>
-                        <div class="form-group col-sm-2">                            
-                            <input type="text" placeholder="Year From..." value="" name='year-from' class="form-control">
-                        </div>
-                        <div class="form-group col-sm-2">                           
-                            <input type="text" placeholder="Year To..." value="" name='year-to' class="form-control">
-                        </div>
-                        <div class="form-group col-sm-2 col-xs-6">
-                        Gas Type
-                            <select data-filter="model" class="filter-model filter form-control">
-                                <option value="all">All</option>
-                                {% for item in object %}
-                                <option value="{{item.gas_type}}">{{item.gas_type}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group col-sm-2 col-xs-6">  
-                            Condition
-                            
-                            <select data-filter="model" class="filter-model filter form-control">
-                                <option value="all">All</option>
-                                {% for item in object %}
-                                <option value="{{ item.condition }}">{{item.condition}}</option>                                
-                                {% endfor %}
-                            </select>
-                        </div>
-                        {% endif %}
-                        
-                        
-                        
-                        <button class="btn btn-primary">Filter</button>
+                        <button class="btn btn-primary" name="filter">Filter</button>
                     </form>
                 </div>
                     {% if is_paginated %}      

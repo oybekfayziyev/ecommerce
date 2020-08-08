@@ -17,7 +17,8 @@ from allauth.account.views import LoginView
 
 from .utils.utils import reference_code, is_valid_form
 from .utils.core import (get_promo_code, is_ordered,						
-						get_category)
+						get_category, filter_by_search, 
+						get_attributes, filter_by_items)
 # Create your views here.
 
 import stripe
@@ -110,7 +111,13 @@ class CategoryDetailView(DetailView):
 		except TypeError:			 
 			category = Category.objects.filter(title = elements)			 
 			items = Item.objects.filter(category = category[0])
-			 	
+		 
+		query = self.request.GET.get('search')
+		if query:			 
+			items = filter_by_search(items,query)		
+		else:			 
+			items = filter_by_items(items,request=self.request)
+			 
 		return items
 
 	def get_context_data(self, *args, **kwargs):
@@ -118,21 +125,17 @@ class CategoryDetailView(DetailView):
 		category = get_category(Category, self.kwargs.get('id'), self.kwargs.get('slug'))	
 		category_ = Category.objects.get(slug= self.kwargs.get('slug'))		 
 		query = self.request.GET.get('search')	
-		print('query',query)	 
+			 
 		context["query"] = query
 		context['category'] = category
-		context['category_'] = category_	
-			 
+		context['category_'] = category_
+		context['colors'] = self.get_object().values_list('color',flat=True).distinct()	
+		context['sizes'] = self.get_object().values_list('size',flat=True).distinct()	
+		context['gas_types'] = self.get_object().values_list('gas_type',flat=True).distinct()	
+		context['conditions'] = self.get_object().values_list('condition',flat=True).distinct()	
+		
 		return context
 	
-	def get_queryset(self, *args, **kwargs):
-
-		query = self.request.GET.get('search', None)	 
-		if query is not None:
-						 
-			return Item.objects.search(query)
-	 
-		return Item.objects.all()
 
 class OrderedItems(ListView):
 	 
@@ -145,7 +148,7 @@ class OrderedItems(ListView):
 		for order in orders:
 			is_product_ordered.append(is_ordered(order.ordered_date, order.status_changed))
 		# is_product_ordered = is_ordered([date.ordered_date for date in orders])
-		print(is_product_ordered)
+		 
 		for index, i in enumerate(is_product_ordered):
 			
 			if i:			 			
